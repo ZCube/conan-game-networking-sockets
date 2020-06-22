@@ -1,4 +1,5 @@
 from conans import ConanFile, CMake, tools
+from conans.tools import os_info, SystemPackageTool
 import os
 
 
@@ -65,3 +66,14 @@ class GameNetworkingSocketsConan(ConanFile):
         self.cpp_info.libs = tools.collect_libs(self)
         if not self.options.shared:
             self.cpp_info.defines = ["STEAMNETWORKINGSOCKETS_STATIC_LINK"]
+
+        if os_info.is_linux:
+            self.cpp_info.defines += ["POSIX", "LINUX"]
+        elif os_info.is_macos:
+            self.cpp_info.defines += ["POSIX", "OSX"]
+        elif os_info.is_freebsd:
+            self.cpp_info.defines += ["POSIX"]
+        elif os_info.is_solaris:
+            self.cpp_info.defines += ["POSIX"]
+        elif os_info.is_windows:
+            self.cpp_info.defines += ["WIN32"]
