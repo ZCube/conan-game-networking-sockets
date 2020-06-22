@@ -1,10 +1,10 @@
 #include <iostream>
-#include <steamnetworkingsockets/isteamnetworkingsockets.h>
+#include <steam/steamnetworkingsockets.h>
 
 int main()
 {
     SteamDatagramErrMsg errMsg;
-    if (!GameNetworkingSockets_Init(errMsg)) {
+    if (!GameNetworkingSockets_Init(nullptr, errMsg)) {
         std::cerr << "GameNetworkingSockets_Init failed: " << errMsg << std::endl;
         return 1;
     }

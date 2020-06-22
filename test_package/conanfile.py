@@ -6,7 +6,6 @@ from conans import ConanFile, CMake, tools
 class GameNetworkingSocketsTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
-    build_requires = "cmake_installer/3.11.1@conan/stable"
 
     def build(self):
         cmake = CMake(self)

@@ -3,16 +3,16 @@ import os
 
 
 class GameNetworkingSocketsConan(ConanFile):
-    name = "GameNetworkingSockets"
-    version = "20180929"
+    name = "game-networking-sockets"
+    version = "1.1.0"
     description = "Reliable & unreliable messages over UDP"
     topics = ("conan", "udp", "network", "networking", "internet")
-    url = "https://github.com/bincrafters/conan-GameNetworkingSockets"
+    url = "https://github.com/ZCube/conan-GameNetworkingSockets"
     homepage = "https://github.com/ValveSoftware/GameNetworkingSockets"
     author = "Bincrafters <bincrafters@gmail.com>"
     license = "BSD 3-Clause"
     exports = ["LICENSE.md"]
-    exports_sources = ["CMakeLists.txt", "conan.patch"]
+    exports_sources = ["CMakeLists.txt"]
     generators = "cmake"
 
     settings = "os", "compiler", "build_type", "arch"
@@ -24,20 +24,22 @@ class GameNetworkingSocketsConan(ConanFile):
     _commit = "85dc1cd4686355e4f8229d9c23607824f6a751ac"
 
     requires = (
-        "OpenSSL/1.0.2o@conan/stable",
-        "protobuf/3.6.1@bincrafters/stable",
+        "openssl/1.1.1g",
+        "grpc/1.29.1@zcube/stable",
     )
-    build_requires = "cmake_installer/3.11.1@conan/stable"
 
     def source(self):
-        tools.get("https://github.com/ValveSoftware/GameNetworkingSockets/archive/{}.tar.gz".format(self._commit))
-        os.rename("GameNetworkingSockets-" + self._commit, self._source_subfolder)
-        tools.patch(self._source_subfolder, patch_file="conan.patch")
+        tools.get("https://github.com/ValveSoftware/GameNetworkingSockets/archive/v{}.tar.gz".format(self.version))
+        os.rename("GameNetworkingSockets-" + self.version, self._source_subfolder)
+        # tools.patch(self._source_subfolder, patch_file="conan.patch")
+        tools.replace_in_file(os.path.join(self._source_subfolder, "CMakeLists.txt"), "OpenSSL::Crypto", "CONAN_PKG::openssl")
+        tools.replace_in_file(os.path.join(self._source_subfolder, "src", "CMakeLists.txt"), "${PROTOBUF_LIBRARIES}", "CONAN_PKG::grpc")
+        tools.replace_in_file(os.path.join(self._source_subfolder, "CMakeLists.txt"), "check_symbol_exists(EVP_MD_CTX_free openssl/evp.h OPENSSL_NEW_ENOUGH)", "set(OPENSSL_NEW_ENOUGH ON)")
 
     def build(self):
-        with tools.environment_append({"LD_LIBRARY_PATH": self.deps_cpp_info["protobuf"].lib_paths}):
+        with tools.environment_append({"LD_LIBRARY_PATH": self.deps_cpp_info["grpc"].lib_paths}):
             cmake = CMake(self)
-            cmake.definitions["Protobuf_USE_STATIC_LIBS"] = not self.options["protobuf"].shared
+            cmake.definitions["Protobuf_USE_STATIC_LIBS"] = not self.options["grpc"].shared
             cmake.configure(build_folder=self._build_subfolder)
             cmake.build()
 
@@ -62,4 +64,4 @@ class GameNetworkingSocketsConan(ConanFile):
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
         if not self.options.shared:
-            self.cpp_info.defines = ["STEAMDATAGRAMLIB_STATIC_LINK"]
+            self.cpp_info.defines = ["STEAMNETWORKINGSOCKETS_STATIC_LINK"]
